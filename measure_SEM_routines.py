@@ -13,7 +13,8 @@ import cv2
 import os
 import datetime
 from re import search
-from skimage import io, color, filters, measure, morphology, util
+from skimage import io, color, filters, measure, morphology, util, transform as tf
+
 
 # plot settings
 font = {'family':'serif', 'weight':'normal', 'size':18}
@@ -121,9 +122,11 @@ def scalebar_realunits(image, sb_area=(0.85, 0.98, 0.75, 0.99), fs=(14.3, 8.15))
     return barlength_um
 
 
-def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, fs=(14.3, 8.15), sb_area=(0.85, 0.98, 0.75, 0.99), zoom_h=0.90, dist_type='vertical'):
+def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, fs=(14.3, 8.15), sb_area=(0.85, 0.98, 0.75, 0.99), zoom_h=0.90, deg_rot=0., dist_type='vertical'):
 
     base_impath   = os.path.basename(image_path)
+    detector      = base_impath.split('_')[-1].split('.')[0]
+    side          = base_impath.split('_')[-2]
     image_dir     = os.path.dirname(image_path) + '/'
     analysis_dir  = os.path.dirname(os.path.dirname(image_dir)) + '/'
     annotated_dir = analysis_dir + 'annotated_images/'
@@ -133,6 +136,10 @@ def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, 
 
     h, w    = image.shape[:2]   # zoom into image so it's larger
     cropped = image[:int(h*zoom_h), :]
+    # tform   = tf.SimilarityTransform(scale=1, rotation=-5*np.pi/180, translation=(image.shape[0] / 2, -100))
+    tform   = tf.SimilarityTransform(rotation=deg_rot*np.pi/180)
+    cropped = tf.warp(cropped, tform)
+
 
     # measure size of scale bar in pixels
     barlength_px = scalebar_pixels(image, show_scalebar=True, sb_area=sb_area, fs=fs)
@@ -185,7 +192,7 @@ def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, 
                 print('\nmeasured vertical distance: {dist:.0f} nm'.format(dist=dist*1E3))
 
                 # store the measurement
-                measurements.append((base_impath, len(measurements)+1, dist*1E3))
+                measurements.append((base_impath, detector, side, len(measurements)+1, dist*1E3))
 
                 # annotate the image
                 if dist_type=='vertical':
@@ -208,4 +215,5 @@ def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, 
         fig_an.savefig(anim_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-    return [(m[0], m[1], m[2]) for m in measurements]
+    # return [(m[0], m[1], m[2]) for m in measurements]
+    return measurements
