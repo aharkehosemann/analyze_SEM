@@ -142,9 +142,6 @@ def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, 
     print('length of scale bar in pixels: {barlength_px:.0f} μm\n'.format(barlength_px=barlength_px))
 
     # read the real-world length of the scale bar
-    # if sb_um:
-    # else:
-    #     barlength_um = scalebar_realunits(image, sb_area=sb_area, fs=fs)
     barlength_um = sb_um if sb_um else scalebar_realunits(image, sb_area=sb_area, fs=fs)
     if not barlength_um:
         print('could not extract real-world scale')
@@ -181,10 +178,10 @@ def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, 
                 dx = abs(x2 - x1); dy = abs(y2 - y1)
                 if dist_type=='vertical':
                     dist = dy / px_per_micron
-                    box_coords = (x1+40, (y1+y2)/2)
+                    box_coords = (x1+20, (y1+y2)/2)
                 elif dist_type=='horizontal':
                     dist = dx / px_per_micron
-                    box_coords = ((x1+x2)/2, y1+10)
+                    box_coords = ((x1+x2)/2, y1+30)
                 print('\nmeasured vertical distance: {dist:.0f} nm'.format(dist=dist*1E3))
 
                 # store the measurement
@@ -195,9 +192,7 @@ def measure_image(image_path, save_annotated=False, fn_comments='', sb_um=None, 
                     ax_an.plot([x1, x1], [y1, y2], 'r-')
                 elif dist_type=='horizontal':
                     ax_an.plot([x1, x2], [y1, y1], 'r-')
-                # ax_an.text((x1 + x2) / 2, (y1 + y2) / 2, ' {msmt_num}: \n {dist:.0f} nm'.format(msmt_num=len(measurements), dist=dist*1E3), color='r')
-                # ax_an.annotate('{msmt_num}: \n{dist:.0f} nm'.format(msmt_num=len(measurements), dist=dist*1E3), (x1+40, (y1+y2)/2), color='k', bbox=dict(boxstyle='square, pad=0.3', fc='w', ec='k', lw=1), fontsize=8, ha='center')
-                ax_an.annotate('{msmt_num}: \n{dist:.0f} nm'.format(msmt_num=len(measurements), dist=dist*1E3), box_coords, color='k', bbox=dict(boxstyle='square, pad=0.3', fc='w', ec='k', lw=1), fontsize=8, ha='center')
+                ax_an.annotate('{msmt_num}: \n{dist:.0f} nm'.format(msmt_num=len(measurements), dist=dist*1E3), box_coords, color='k', bbox=dict(boxstyle='square, pad=0.3', fc='w', ec='k', lw=1), fontsize=6, ha='center')
                 fig_an.canvas.draw()
 
                 # reset points for the next measurement
